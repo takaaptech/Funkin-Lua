@@ -1,8 +1,15 @@
 io.stdout:setvbuf("no")
-local titlestate = require("src.titlestate")
-lovebpm = require("libs.lovebpm")
-json = require("libs.dkjson")
-anim8 = require("libs.anim8")
+
+-- lazy to do a util btw
+function string.starts(String, Start)
+    return string.sub(String, 1, string.len(Start)) == Start
+end
+
+local titlestate = require "src.states.titlestate"
+lovebpm = require "libs.lovebpm"
+xml = require("libs.xmlSimple").newParser()
+json = require "libs.dkjson"
+anim8 = require "libs.anim8"
 
 function love.load()
     titlestate.load()
