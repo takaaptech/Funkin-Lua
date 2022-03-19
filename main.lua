@@ -1,7 +1,7 @@
 io.stdout:setvbuf("no")
 local titlestate = require("src.titlestate")
 lovebpm = require("libs.lovebpm")
-json = require ("libs.dkjson")
+json = require("libs.dkjson")
 anim8 = require("libs.anim8")
 
 function love.load()

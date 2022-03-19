@@ -8,4 +8,4 @@ function love.conf(t)
     t.window.y = 30
     t.window.x = 30
     t.console = true
-end    
+end
