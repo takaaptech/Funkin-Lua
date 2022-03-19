@@ -5,9 +5,9 @@ local sprite = {}
 -- default data
 local Sprite = {
     image = nil,
-    batch = nil,
     xmlData = nil,
     animations = {},
+    firstQuad = nil,
 
     curAnim = {
         name = '',
@@ -23,21 +23,24 @@ local Sprite = {
 Sprite.__index = Sprite
 
 function Sprite:update(dt)
-    local rate = self.curAnim.framerate / 60
-
-    self.curTime = self.curTime + dt
-    if self.curTime >= rate then
-        self.curTime = self.curTime - rate
+    self.curTime = self.curTime + dt * 0.5
+    if self.curTime >= 1 then
+        self.curTime = self.curTime - 1
     end
 end
 
 function Sprite:draw(x, y, r, sx, sy, ox, oy, kx, ky)
-    local spriteNum = math.floor(self.curTime / (self.curAnim.framerate / 60) * #self.curAnim.quads) + 1
+    local spriteNum = math.floor(self.curTime * self.curAnim.length) + 1
     if (not self.curAnim.loop and self.curAnim.finished) or self.curAnim.quads[spriteNum] == nil then
         spriteNum = self.safeFrame
     end
 
-    love.graphics.draw(self.image, self.curAnim.quads[spriteNum], x, y, r, sx, sy, ox, oy, kx, ky)
+    local quad = self.curAnim.quads[spriteNum]
+    if quad == nil then
+        quad = self.firstQuad
+    end
+
+    love.graphics.draw(self.image, quad, x, y, r, sx, sy, ox, oy, kx, ky)
 
     if not self.curAnim.loop and spriteNum == self.curAnim.length then
         self.curAnim.finished = true
@@ -51,34 +54,39 @@ function Sprite:addAnim(name, prefix, framerate, loop)
         framerate = 24
     end
     if loop == nil then
-        loop = false
+        loop = true
     end
 
     local totalAnims = utils.tablelength(self.xmlData)
 
     for i = 1, totalAnims do
         local data = self.xmlData[i]
-        local lePrefix = string.sub(data["@name"], 1, -6)
 
-        if lePrefix == prefix then
+        if string.match(data["@name"], prefix) then
             local quads = {}
             local length = 0
 
             for i = 1, totalAnims do
                 local data = self.xmlData[i]
-                if string.starts(data["@name"], lePrefix) then
-                    -- local trimmed = data["@frameX"] ~= nil
+                if string.starts(data["@name"], prefix) then
+                    local trimmed = data["@frameX"] ~= nil
                     -- local rotated = data["@rotated"] ~= nil and data["@rotated"] == "true"
 
-                    -- local kx = 0
-                    -- local ky = 0
-                    -- if trimmed then
-                    --     kx = data["@frameX"]
-                    --     ky = data["@frameY"]
-                    -- end
+                    if data["@frameX"] ~= nil then
+                        data["@x"] = data["@x"] + data["@frameX"]
+                    end
+                    if data["@frameY"] ~= nil then
+                        data["@y"] = data["@y"] + data["@frameY"]
+                    end
 
-                    table.insert(quads, love.graphics
-                        .newQuad(data["@x"], data["@y"], data["@width"], data["@height"], self.image:getDimensions()))
+                    local quad = love.graphics.newQuad(data["@x"], data["@y"], data["@width"], data["@height"],
+                        self.image:getDimensions())
+
+                    if self.firstQuad == nil then
+                        self.firstQuad = quad
+                    end
+
+                    table.insert(quads, quad)
                     length = length + 1
                 end
             end
@@ -100,6 +108,7 @@ function Sprite:playAnim(anim)
     self.curAnim = self.animations[anim]
     self.curAnim.finished = false
     self.safeFrame = 1
+    self.curTime = 0
 end
 
 function sprite.newSprite(image, xml)
@@ -107,7 +116,6 @@ function sprite.newSprite(image, xml)
     setmetatable(self, Sprite)
 
     self.image = image
-    self.batch = love.graphics.newSpriteBatch(image)
     self.xmlData = utils.parseAtlas(xml)
 
     return self

@@ -6,10 +6,12 @@ function string.starts(String, Start)
 end
 
 local titlestate = require "src.states.titlestate"
+sprite = require "src.sprite"
+utils = require "src.utils"
+
 lovebpm = require "libs.lovebpm"
 xml = require("libs.xmlSimple").newParser()
-json = require "libs.dkjson"
-anim8 = require "libs.anim8"
+-- json = require "libs.dkjson"
 
 function love.load()
     titlestate.load()

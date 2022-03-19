@@ -27,4 +27,9 @@ function utils.parseAtlas(xml)
     return anims
 end
 
+function utils.makeSprite(path)
+    path = "assets/images/" .. path
+    return sprite.newSprite(love.graphics.newImage(path .. ".png"), xml:ParseXmlText(utils.readFile(path .. ".xml")))
+end
+
 return utils
