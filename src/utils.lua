@@ -8,7 +8,7 @@ function utils.tablelength(T)
     return count
 end
 
-function utils.readfile(path)
+function utils.readFile(path)
     local file = io.open(path, "rb") -- r read mode and b binary mode
     if not file then
         return nil
