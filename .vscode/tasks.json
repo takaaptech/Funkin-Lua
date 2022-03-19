@@ -6,7 +6,7 @@
         {
             "label": "Run project",
             "type": "shell",
-            "command": "love main.lua",
+            "command": "love --console .",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
