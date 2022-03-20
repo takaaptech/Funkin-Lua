@@ -50,9 +50,6 @@ function Sprite:draw(x, y, r, sx, sy, ox, oy, kx, ky)
 end
 
 function Sprite:addAnim(name, prefix, indices, framerate, loop)
-    if indices == nil then
-        indices = {}
-    end
     if framerate == nil then
         framerate = 24
     end
@@ -69,15 +66,13 @@ function Sprite:addAnim(name, prefix, indices, framerate, loop)
             local quads = {}
             local length = 0
 
-            local loopThingy = totalAnims
-            if indices ~= nil and indices ~= {} then
-                loopThingy = indices
-            end
-
             -- not good but im lazy to rewrite that
-            for i = 1, loopThingy do
+            for i = 1, totalAnims do
                 local data = self.xmlData[i]
-                if string.starts(data["@name"], prefix) then
+
+                if ((indices ~= nil and not indices == {}) and table.has_value(indices, i)) or
+                    string.starts(data["@name"], prefix) then
+
                     if data["@frameX"] ~= nil then
                         data["@x"] = data["@x"] + data["@frameX"]
                     end
@@ -120,11 +115,18 @@ function Sprite:addAnim(name, prefix, indices, framerate, loop)
     end
 end
 
-function Sprite:playAnim(anim)
+function Sprite:playAnim(anim, forced)
+    if forced == nil then
+        forced = false
+    end
+
     self.curAnim = self.animations[anim]
     self.curAnim.finished = false
-    self.safeFrame = 1
     self.curTime = 0
+
+    if (not forced and not self.curAnim.name == anim) or forced then
+        self.safeFrame = 1
+    end
 end
 
 function sprite.newSprite(image, xml)

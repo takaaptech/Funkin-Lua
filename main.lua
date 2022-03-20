@@ -4,6 +4,14 @@ io.stdout:setvbuf("no")
 function string.starts(String, Start)
     return string.sub(String, 1, string.len(Start)) == Start
 end
+function table.has_value(tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
 
 local titlestate = require "src.states.titlestate"
 sprite = require "src.sprite"
