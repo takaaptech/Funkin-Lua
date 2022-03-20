@@ -23,7 +23,7 @@ local Sprite = {
 Sprite.__index = Sprite
 
 function Sprite:update(dt)
-    self.curTime = self.curTime + dt * 0.5
+    self.curTime = self.curTime + dt / (self.curAnim.framerate / 15)
     if self.curTime >= 1 then
         self.curTime = self.curTime - 1
     end
@@ -49,7 +49,10 @@ function Sprite:draw(x, y, r, sx, sy, ox, oy, kx, ky)
     self.safeFrame = spriteNum
 end
 
-function Sprite:addAnim(name, prefix, framerate, loop)
+function Sprite:addAnim(name, prefix, indices, framerate, loop)
+    if indices == nil then
+        indices = {}
+    end
     if framerate == nil then
         framerate = 24
     end
@@ -66,17 +69,30 @@ function Sprite:addAnim(name, prefix, framerate, loop)
             local quads = {}
             local length = 0
 
-            for i = 1, totalAnims do
+            local loopThingy = totalAnims
+            if indices ~= nil and indices ~= {} then
+                loopThingy = indices
+            end
+
+            -- not good but im lazy to rewrite that
+            for i = 1, loopThingy do
                 local data = self.xmlData[i]
                 if string.starts(data["@name"], prefix) then
-                    local trimmed = data["@frameX"] ~= nil
-                    -- local rotated = data["@rotated"] ~= nil and data["@rotated"] == "true"
-
                     if data["@frameX"] ~= nil then
                         data["@x"] = data["@x"] + data["@frameX"]
                     end
                     if data["@frameY"] ~= nil then
                         data["@y"] = data["@y"] + data["@frameY"]
+                    end
+
+                    if data["@frameWidth"] ~= nil then
+                        data["@width"] = data["@frameWidth"]
+                    end
+                    if data["@frameHeight"] ~= nil then
+                        data["@height"] = data["@frameHeight"]
+
+                        -- hotfix idk
+                        data["@y"] = data["@y"] + 2
                     end
 
                     local quad = love.graphics.newQuad(data["@x"], data["@y"], data["@width"], data["@height"],

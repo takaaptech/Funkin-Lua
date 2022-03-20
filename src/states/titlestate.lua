@@ -1,6 +1,10 @@
 local titlestate = {}
 
 function titlestate.load()
+    gf = utils.makeSprite("gfDanceTitle")
+    gf:addAnim("idle", "gfDance")
+    gf:playAnim("idle")
+
     logo = utils.makeSprite("logoBumpin")
     logo:addAnim("bump", "logo bumpin instance ", 24, false)
 
@@ -15,6 +19,7 @@ function titlestate.load()
 end
 
 function titlestate.update(dt)
+    gf:update(dt)
     logo:update(dt)
     titleText:update(dt)
 
@@ -22,6 +27,7 @@ function titlestate.update(dt)
 end
 
 function titlestate.draw()
+    gf:draw(512, 40)
     logo:draw(-100, -50)
     titleText:draw(100, 576)
 end
