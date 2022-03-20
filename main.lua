@@ -13,13 +13,18 @@ function table.has_value(tab, val)
     return false
 end
 
-local titlestate = require "src.states.titlestate"
-sprite = require "src.sprite"
+paths = require "src.paths"
 utils = require "src.utils"
+sprite = require "src.sprite"
+
+local titlestate = require "src.states.titlestate"
 
 lovebpm = require "libs.lovebpm"
 xml = require("libs.xmlSimple").newParser()
 -- json = require "libs.dkjson"
+
+-- cache assets
+confirmSnd = paths.getSound("confirmMenu")
 
 function love.load()
     titlestate.load()
@@ -31,4 +36,8 @@ end
 
 function love.draw()
     titlestate.draw()
+end
+
+function love.keypressed(key, scancode, isrepeat)
+    titlestate.keypressed(key, scancode, isrepeat)
 end

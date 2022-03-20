@@ -50,6 +50,9 @@ function Sprite:draw(x, y, r, sx, sy, ox, oy, kx, ky)
 end
 
 function Sprite:addAnim(name, prefix, indices, framerate, loop)
+    if indices == nil then
+        indices = {};
+    end
     if framerate == nil then
         framerate = 24
     end
@@ -66,32 +69,39 @@ function Sprite:addAnim(name, prefix, indices, framerate, loop)
             local quads = {}
             local length = 0
 
-            -- not good but im lazy to rewrite that
-            for i = 1, totalAnims do
-                local data = self.xmlData[i]
+            for f = 1, totalAnims do
+                local data = self.xmlData[f]
 
-                if ((indices ~= nil and not indices == {}) and table.has_value(indices, i)) or
-                    string.starts(data["@name"], prefix) then
+                local isOk = true
+                if table.has_value(indices, f) then
+                    isOk = false;
+                end
+
+                if isOk and string.starts(data["@name"], prefix) then
+                    local x = data["@x"]
+                    local y = data["@y"]
+
+                    local width = data["@width"]
+                    local height = data["@height"]
 
                     if data["@frameX"] ~= nil then
-                        data["@x"] = data["@x"] + data["@frameX"]
+                        x = x + data["@frameX"]
                     end
                     if data["@frameY"] ~= nil then
-                        data["@y"] = data["@y"] + data["@frameY"]
+                        y = y + data["@frameY"]
                     end
 
                     if data["@frameWidth"] ~= nil then
-                        data["@width"] = data["@frameWidth"]
+                        width = data["@frameWidth"]
                     end
                     if data["@frameHeight"] ~= nil then
-                        data["@height"] = data["@frameHeight"]
+                        height = data["@frameHeight"]
 
-                        -- hotfix idk
-                        data["@y"] = data["@y"] + 2
+                        -- hotfix duh
+                        y = y + 2
                     end
 
-                    local quad = love.graphics.newQuad(data["@x"], data["@y"], data["@width"], data["@height"],
-                        self.image:getDimensions())
+                    local quad = love.graphics.newQuad(x, y, width, height, self.image:getDimensions())
 
                     if self.firstQuad == nil then
                         self.firstQuad = quad
@@ -124,7 +134,7 @@ function Sprite:playAnim(anim, forced)
     self.curAnim.finished = false
     self.curTime = 0
 
-    if (not forced and not self.curAnim.name == anim) or forced then
+    if forced or (not forced and not self.curAnim.name == anim) then
         self.safeFrame = 1
     end
 end
