@@ -17,23 +17,24 @@ local Sprite = {
         loop = false,
         finished = false
     },
-    safeFrame = 1,
-    curTime = 0
+
+    curFrame = 1
 }
 Sprite.__index = Sprite
 
 function Sprite:update(dt)
-    self.curTime = self.curTime + dt / (self.curAnim.framerate / 15)
-    if self.curTime >= 1 then
-        self.curTime = self.curTime - 1
+    self.curFrame = self.curFrame + 10 * (dt * 1.75)
+    if self.curFrame >= self.curAnim.length then
+        self.curFrame = 1
     end
 end
 
+function Sprite:getCurrentAnim()
+    return self.curAnim
+end
+
 function Sprite:draw(x, y, r, sx, sy, ox, oy, kx, ky)
-    local spriteNum = math.floor(self.curTime * self.curAnim.length) + 1
-    if (not self.curAnim.loop and self.curAnim.finished) or self.curAnim.quads[spriteNum] == nil then
-        spriteNum = self.safeFrame
-    end
+    local spriteNum = math.floor(self.curFrame) + 1
 
     local quad = self.curAnim.quads[spriteNum]
     if quad == nil then
@@ -42,11 +43,9 @@ function Sprite:draw(x, y, r, sx, sy, ox, oy, kx, ky)
 
     love.graphics.draw(self.image, quad, x, y, r, sx, sy, ox, oy, kx, ky)
 
-    if not self.curAnim.loop and spriteNum == self.curAnim.length then
+    if not self.curAnim.loop and spriteNum >= self.curAnim.length then
         self.curAnim.finished = true
     end
-
-    self.safeFrame = spriteNum
 end
 
 function Sprite:addAnim(name, prefix, indices, framerate, loop)
@@ -117,6 +116,7 @@ function Sprite:addAnim(name, prefix, indices, framerate, loop)
                 quads = quads,
                 length = length,
                 framerate = framerate,
+                _duration = length / framerate / 1.25,
                 loop = loop
             }
 
@@ -125,18 +125,33 @@ function Sprite:addAnim(name, prefix, indices, framerate, loop)
     end
 end
 
+function Sprite:stop()
+    self.curAnim = nil
+end
+
 function Sprite:playAnim(anim, forced)
     if forced == nil then
         forced = false
     end
 
-    self.curAnim = self.animations[anim]
-    self.curAnim.finished = false
-    self.curTime = 0
+    self:stop()
 
-    if forced or (not forced and not self.curAnim.name == anim) then
-        self.safeFrame = 1
+    if (self.animations[anim] ~= null) then
+        -- very dumb i am so i do this
+        local canPlay = true
+        if not forced and self.curAnim.name == anim then
+            canPlay = false
+        end
+
+        if canPlay then
+            self.curAnim = self.animations[anim]
+            self.curAnim.finished = false
+            self.curFrame = 1
+        end
+    else
+        print("No animation called " .. anim)
     end
+
 end
 
 function sprite.newSprite(image, xml)
